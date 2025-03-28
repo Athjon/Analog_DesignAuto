@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 import time
 from scipy.optimize import minimize
-import matplotlib.pyplot as plt  # 新增：用于绘图
+import matplotlib.pyplot as plt  # 用于绘图
 
 @dataclass
 class OptimizationResult:
@@ -16,6 +16,7 @@ class OptimizationResult:
     all_params: List[np.ndarray]
     all_values: List[float]
     optimization_path: List[float]
+    batch_avg_values: List[float]  # 新增：每批次的平均reward
 
 class BayesianOptimizer:
     """
@@ -77,6 +78,9 @@ class BayesianOptimizer:
         self.best_value = -np.inf
         self.best_params = None
         
+        # 新增：初始化批次平均reward列表
+        self.batch_avg_values = []
+        
         # 记录开始时间
         self.start_time = time.time()
         logging.info(f"贝叶斯优化器初始化完成，输入维度: {input_dim}")
@@ -106,7 +110,6 @@ class BayesianOptimizer:
         if self.parallel_eval_func:
             # 使用并行评估
             logging.info(f"使用并行评估进行初始采样 (n={n_init})...")
-            from parallel_evaluation import ParallelEvaluator
             
             # 生成均匀分布的随机样本
             X_init = np.random.uniform(
@@ -117,6 +120,11 @@ class BayesianOptimizer:
             
             # 并行评估样本
             y_init = self.parallel_eval_func(X_init)
+            
+            # 新增：计算并存储初始批次的平均reward
+            batch_avg = np.mean(y_init)
+            self.batch_avg_values.append(batch_avg)
+            logging.info(f"初始批次的平均reward: {batch_avg:.4f}")
         else:
             # 顺序评估
             logging.info(f"使用顺序评估进行初始采样 (n={n_init})...")
@@ -126,6 +134,11 @@ class BayesianOptimizer:
                 size=(n_init, self.input_dim)
             )
             y_init = np.array([self.eval_func(x) for x in X_init])
+            
+            # 新增：计算并存储初始批次的平均reward
+            batch_avg = np.mean(y_init)
+            self.batch_avg_values.append(batch_avg)
+            logging.info(f"初始批次的平均reward: {batch_avg:.4f}")
 
         # 更新历史
         self.X_history.extend(X_init)
@@ -135,6 +148,9 @@ class BayesianOptimizer:
         best_idx = np.argmax(y_init)
         self.best_value = y_init[best_idx]
         self.best_params = X_init[best_idx]
+        
+        # 新增：绘制初始批次的平均reward图表
+        self._plot_batch_average_rewards(0)
         
         # 如果有结果跟踪器，初始化它
         if self.result_tracker:
@@ -176,6 +192,11 @@ class BayesianOptimizer:
             else:
                 # 顺序评估
                 next_y_values = np.array([self.eval_func(x) for x in next_points])
+            
+            # 新增：计算并存储当前批次的平均reward
+            batch_avg = np.mean(next_y_values)
+            self.batch_avg_values.append(batch_avg)
+            logging.info(f"批次 {i+1} 的平均reward: {batch_avg:.4f}")
                 
             # 找到最佳点
             best_idx = np.argmax(next_y_values)
@@ -199,7 +220,7 @@ class BayesianOptimizer:
             if self.result_tracker:
                 self.result_tracker.update(i+1, next_x, next_y, next_points, next_y_values)
             
-            # 新增：在每次仿真（reward计算后）绘制并保存优化历史图
+            # 在每次仿真（reward计算后）绘制并保存优化历史图
             plt.figure(figsize=(10,6))
             plt.plot(optimization_path, '-o')
             plt.xlabel('Round')
@@ -211,6 +232,9 @@ class BayesianOptimizer:
             plt.close()
             logging.info(f"已保存优化历史图: {plot_path}")
             
+            # 新增：绘制批次平均reward图表
+            self._plot_batch_average_rewards(i+1)
+            
             # 定期保存结果
             if (i + 1) % save_freq == 0:
                 self._save_results(i + 1)
@@ -218,7 +242,7 @@ class BayesianOptimizer:
             # 记录迭代时间
             iter_time = time.time() - iter_start_time
             total_time = time.time() - self.start_time
-            logging.info(f"迭代 {i + 1}/{n_iter}: 最佳值 = {self.best_value:.4f}, "
+            logging.info(f"迭代 {i + 1}/{n_iter}: 最佳值 = {self.best_value:.4f}, 平均值 = {batch_avg:.4f}, "
                          f"迭代耗时 = {iter_time:.2f}秒, 总耗时 = {total_time:.2f}秒")
 
         # 最终保存
@@ -233,8 +257,47 @@ class BayesianOptimizer:
             best_value=self.best_value,
             all_params=self.X_history,
             all_values=self.y_history,
-            optimization_path=optimization_path
+            optimization_path=optimization_path,
+            batch_avg_values=self.batch_avg_values  # 新增：返回批次平均值列表
         )
+    
+    # 新增：绘制批次平均reward的函数
+    def _plot_batch_average_rewards(self, iteration: int):
+        """
+        绘制每个批次的平均reward
+        
+        Args:
+            iteration: 当前迭代次数
+        """
+        plt.figure(figsize=(10,6))
+        
+        # 绘制批次平均reward
+        plt.plot(range(len(self.batch_avg_values)), self.batch_avg_values, '-o', color='green', label='Batch Average')
+        
+        # 如果有3个或以上的点，计算移动平均线
+        if len(self.batch_avg_values) >= 3:
+            window_size = min(3, len(self.batch_avg_values))
+            moving_avg = np.convolve(self.batch_avg_values, np.ones(window_size)/window_size, mode='valid')
+            # 绘制移动平均线
+            x_vals = range(window_size-1, len(self.batch_avg_values))
+            plt.plot(x_vals, moving_avg, '--', color='red', label=f'{window_size}-point Moving Avg')
+        
+        plt.xlabel('Batch Number')
+        plt.ylabel('Average Reward')
+        plt.title('Batch Average Rewards')
+        plt.grid(True)
+        plt.legend()
+        
+        # 添加数值标签
+        for i, avg in enumerate(self.batch_avg_values):
+            plt.annotate(f'{avg:.3f}', (i, avg), textcoords="offset points", 
+                        xytext=(0,10), ha='center')
+        
+        # 保存图片
+        plot_path = os.path.join(self.save_dir, f'batch_average_rewards_iter_{iteration}.png')
+        plt.savefig(plot_path)
+        plt.close()
+        logging.info(f"已保存批次平均reward图: {plot_path}")
 
     def _acquisition_function(self, x: np.ndarray) -> float:
         """
@@ -320,7 +383,8 @@ class BayesianOptimizer:
             'X_history': self.X_history,
             'y_history': self.y_history,
             'best_params': self.best_params,
-            'best_value': self.best_value
+            'best_value': self.best_value,
+            'batch_avg_values': self.batch_avg_values  # 新增：保存批次平均值
         }
         save_path = os.path.join(self.save_dir, f'results_iter_{iteration}.npz')
         np.savez(save_path, **results)
