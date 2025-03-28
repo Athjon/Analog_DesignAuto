@@ -1,0 +1,14 @@
+max_process_limit: false
+cpu_usage: 25
+gpu_usage: 0
+generalize: true
+netlist_folder_name: netlist_template_KNL_N65
+specs_folder_name: sampled_specs_KNL_N65
+config_folder_name: config_KNL_N65
+run_folder_name: run_test
+sim_output: false
+init_method: mixed
+dc_check: true
+restore_checkpoint: true
+checkpoint_path: /data/share/train_data/KNL/checkpoint/PPO_AnalogDesignEnv_v0_d285d_00000_0_2024-06-26_10-50-18/checkpoint_000020
+train_iterations: 2000

@@ -1,0 +1,19 @@
+max_process_limit: false
+cpu_usage: 30
+gpu_usage: 1
+generalize: true
+algorithm: PPO
+max_step: 10
+num_agents: 6
+netlist_folder_name: netlist_template_Cai_UM
+specs_folder_name: sampled_specs_Cai
+config_folder_name: config_Cai_Multi
+run_folder_name: run_test
+sim_output: false
+init_method: file
+dc_check: false
+region_extract: true
+dynamic_queue: false
+restore_checkpoint: false
+checkpoint_path:
+train_iterations: 2500

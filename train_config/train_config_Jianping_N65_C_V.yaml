@@ -1,0 +1,14 @@
+max_process_limit: false
+cpu_usage: 69
+gpu_usage: 0
+generalize: true
+netlist_folder_name: netlist_template_Jianping_N65_bk_V
+specs_folder_name: sampled_specs_Jianping_N65_V
+config_folder_name: config_Jianping_N65_C_V
+run_folder_name: run_test
+sim_output: false
+init_method: half
+dc_check: true
+restore_checkpoint: true
+checkpoint_path: /home/wuhan/ray_results/AnalogDesignEnv_v0/PPO/PPO_AnalogDesignEnv_v0_8c8b4_00000_0_2024-06-14_10-48-15/checkpoint_000015
+train_iterations: 2000

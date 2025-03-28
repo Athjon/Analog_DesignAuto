@@ -1,0 +1,14 @@
+max_process_limit: false
+cpu_usage: 69
+gpu_usage: 0
+generalize: true
+netlist_folder_name: netlist_template_Jianping_N65_bk_cap
+specs_folder_name: sampled_specs_Jianping_N65
+config_folder_name: config_Jianping_N65_C
+run_folder_name: run_test
+sim_output: false
+init_method: mixed
+dc_check: true
+restore_checkpoint: true
+checkpoint_path: /data/share/train_data/Jianping/checkpoint/Jianping_N65_UM_Cap_30521/checkpoint_000015/
+train_iterations: 2000

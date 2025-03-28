@@ -1,0 +1,14 @@
+max_process_limit: false
+cpu_usage: 60
+gpu_usage: 0
+generalize: true
+netlist_folder_name: netlist_template_Lab_N65
+specs_folder_name: sampled_specs_Lab_N65_DC
+config_folder_name: config_Lab_N65_DC
+run_folder_name: run_test
+sim_output: false
+init_method: random
+dc_check: true
+restore_checkpoint: false
+checkpoint_path:
+train_iterations: 200

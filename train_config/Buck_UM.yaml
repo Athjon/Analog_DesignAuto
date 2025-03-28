@@ -1,0 +1,21 @@
+max_process_limit: false
+cpu_usage: 30
+gpu_usage: 1
+generalize: true
+algorithm: PPO
+max_step: 10
+num_agents: 5
+netlist_folder_name: netlist_template_Buck_UM
+specs_folder_name: sampled_specs_Buck
+config_folder_name: config_Buck
+run_folder_name: run_test
+sim_output: false
+init_method: random
+dc_check: false
+region_extract: false
+dynamic_queue: false
+restore_checkpoint: false
+checkpoint_path:
+train_iterations: 2000
+reward_func: cal_reward_buck
+log_level: INFO

@@ -1,0 +1,18 @@
+max_process_limit: false
+cpu_usage: 20
+gpu_usage: 0
+generalize: true
+algorithm: APPO
+max_step: 100
+num_agents: 4
+netlist_folder_name: netlist_template_Lab_N65
+specs_folder_name: sampled_specs_Lab_N65
+config_folder_name: config_Lab_N65
+run_folder_name: run_test
+sim_output: false
+init_method: random
+dc_check: false
+dynamic_queue: false
+restore_checkpoint: false
+checkpoint_path:
+train_iterations: 500

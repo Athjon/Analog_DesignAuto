@@ -1,0 +1,22 @@
+max_process_limit: false
+cpu_usage: 100
+gpu_usage: 2
+generalize: true
+algorithm: PPO
+max_step: 10
+num_agents: 5
+netlist_folder_name: netlist_template_Haoqiang_YeLab
+specs_folder_name: sampled_specs_Haoqiang
+config_folder_name: config_Haoqiang
+run_folder_name: run_test
+sim_output: false
+init_method: file
+corner_sim: false
+dc_check: false
+region_extract: true
+dynamic_queue: false
+restore_checkpoint: false
+checkpoint_path:
+train_iterations: 3000
+reward_func: cal_reward_Haoqiang
+log_level: INFO
